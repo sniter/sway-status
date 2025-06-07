@@ -13,7 +13,7 @@ import (
 type SysMon struct {
 	DiskName     string
 	CpuStatsFile string
-	LabelFormet  string
+	LabelFormat  string
 	Name         string
 	Instance     string
 }
@@ -164,6 +164,6 @@ func (s SysMon) ToBarComponent() sway.BarComponent {
 	return sway.BarComponent{
 		Name:     s.Name,
 		Instance: s.Instance,
-		FullText: fmt.Sprintf(s.LabelFormet, getTemperature(), s.getCPUUsage(), s.getDiskUsage(), getMemoryUsage(), getSwapUsage()),
+		FullText: fmt.Sprintf(s.LabelFormat, getTemperature(), s.getCPUUsage(), s.getDiskUsage(), getMemoryUsage(), getSwapUsage()),
 	}
 }
