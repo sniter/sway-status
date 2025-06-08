@@ -18,7 +18,7 @@ func TestSimpleBatteryRenderer(t *testing.T) {
 			BatteryDischarging:   "D",
 			BatteryUnknownStatus: "?",
 		},
-		Format: "%s%s",
+		Format: "%s%s %d%%",
 	}
 
 	if result, err := renderer.Render(-1, BatteryCharging); err == nil {
@@ -30,12 +30,12 @@ func TestSimpleBatteryRenderer(t *testing.T) {
 	}
 
 	testData := []TestCase{
-		{0, BatteryCharging, "C0"},
-		{1, BatteryFull, "F0"},
-		{24, BatteryNotCharging, "N0"},
-		{25, BatteryDischarging, "D25"},
-		{99, BatteryUnknownStatus, "?75"},
-		{100, BatteryCharging, "C100"},
+		{0, BatteryCharging, "C0 0%"},
+		{1, BatteryFull, "F0 1%"},
+		{24, BatteryNotCharging, "N0 24%"},
+		{25, BatteryDischarging, "D25 25%"},
+		{99, BatteryUnknownStatus, "?75 99%"},
+		{100, BatteryCharging, "C100 100%"},
 	}
 
 	for i, testCase := range testData {

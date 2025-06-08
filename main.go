@@ -3,10 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"hash/fnv"
 	"time"
 
 	"github.com/sniter/sway-status/internal/battery"
 	"github.com/sniter/sway-status/internal/calendar"
+	"github.com/sniter/sway-status/internal/common"
 	"github.com/sniter/sway-status/internal/layout"
 	"github.com/sniter/sway-status/internal/sway"
 	"github.com/sniter/sway-status/internal/sysmon"
@@ -14,15 +16,19 @@ import (
 )
 
 func main() {
-	weatherComp, err := weather.Weather{
-		Provider:    weather.Cached(weather.WttrIn{Url: "https://wttr.in/Jurmala?format=%C+%t+%w"}, "/tmp/wttr_cache", 20*time.Minute),
+	weatherComp := sway.BuildComponent(weather.Weather{
+		Provider: weather.WttrIn{
+			Fetch:        common.Fetch(common.FetchFrom).ReadThrough(fnv.New64(), 20*time.Minute),
+			Location:     "Riga",
+			WttrFormat:   "j1",
+			WindDirIcons: weather.WindDirIcon,
+			Format:       "%s %s %s",
+		},
 		LabelFormat: " %s ",
 		Name:        "weather",
 		Instance:    "main",
-	}.ToBarComponent()
-	if err != nil {
-		panic(err)
-	}
+	}, nil)
+
 	sysMonComp := sysmon.SysMon{
 		DiskName:     "/nvme0",
 		CpuStatsFile: "/tmp/cpu_stat",
@@ -57,13 +63,13 @@ func main() {
 
 	calendar := calendar.Calendar{
 		Name:     "calendar",
-		Instance: "Riga",
+		Instance: "Local",
 		Format:   "Mon Jan 2 15:04",
 	}.ToBarComponent()
 
 	components := []sway.BarComponent{
 		sysMonComp,
-		*weatherComp,
+		weatherComp,
 		layout,
 		battery,
 		calendar,
