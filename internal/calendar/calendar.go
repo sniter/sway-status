@@ -2,8 +2,6 @@ package calendar
 
 import (
 	"time"
-
-	"github.com/sniter/sway-status/internal/sway"
 )
 
 type Calendar struct {
@@ -16,11 +14,8 @@ type Calendar struct {
 func (c Calendar) render() string {
 	return time.Now().Format(c.Format)
 }
-
-func (c Calendar) ToBarComponent() sway.BarComponent {
-	return sway.BarComponent{
-		Name:     c.Name,
-		Instance: c.Instance,
-		FullText: c.render(),
-	}
+func (c Calendar) GetName() string     { return c.Name }
+func (c Calendar) GetInstance() string { return c.Instance }
+func (c Calendar) GetFullText(_ []byte) (string, error) {
+	return c.render(), nil
 }

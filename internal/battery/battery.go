@@ -2,8 +2,6 @@ package battery
 
 import (
 	"fmt"
-
-	"github.com/sniter/sway-status/internal/sway"
 )
 
 type BatteryStatus int
@@ -48,63 +46,20 @@ type Battery struct {
 	Instance    string
 }
 
-func (b Battery) failedComponent() sway.BarComponent {
-	return sway.BarComponent{
-		Name:     b.Name,
-		Instance: b.Instance,
-		FullText: "N/A",
-	}
-}
-
-func (b Battery) ToBarComponent() (sway.BarComponent, error) {
+func (b Battery) GetName() string     { return b.Name }
+func (b Battery) GetInstance() string { return b.Instance }
+func (b Battery) GetFullText(_ []byte) (string, error) {
 	capacity, err := b.Provider.GetCapacity()
 	if err != nil {
-		return b.failedComponent(), err
+		return "", err
 	}
 	status, err := b.Provider.GetStatus()
 	if err != nil {
-		return b.failedComponent(), err
+		return "", err
 	}
 	value, err := b.Renderer.Render(capacity, status)
 	if err != nil {
-		return b.failedComponent(), err
+		return "", err
 	}
-	component := sway.BarComponent{
-		Name:     b.Name,
-		Instance: b.Instance,
-		FullText: fmt.Sprintf(b.LabelFormat, value),
-	}
-	return component, nil
+	return fmt.Sprintf(b.LabelFormat, value), nil
 }
-
-// func getBattery() string {
-// 	statusPath := "/sys/class/power_supply/BAT0/status"
-//
-// 	statusData, err := os.ReadFile(statusPath)
-// 	if err != nil {
-// 		return "N/A"
-// 	}
-//
-// 	icons := []string{"󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"}
-// 	iconIdx := capacityVal / 10
-// 	if iconIdx >= len(icons) {
-// 		iconIdx = len(icons) - 1
-// 	}
-//
-// 	statusIcon := ""
-// 	switch statusStr {
-// 	case "Charging":
-// 		statusIcon = ""
-// 	case "Full":
-// 		statusIcon = ""
-
-// 	case "Not charging":
-// 		statusIcon = ""
-// 	case "Discharging":
-// 		statusIcon = ""
-// 	default:
-// 		statusIcon = statusStr
-// 	}
-//
-// 	return fmt.Sprintf("%s%s %d%%", statusIcon, icons[iconIdx], capacityVal)
-// }

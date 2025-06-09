@@ -1,7 +1,7 @@
 package common
 
 import (
-	"encoding/base64"
+	"fmt"
 	"hash"
 	"io"
 	"net/http"
@@ -28,10 +28,16 @@ func FetchFrom(url string) ([]byte, error) {
 	return io.ReadAll(resp.Body)
 }
 
+func hashUrl(hashOf hash.Hash64, url string) string {
+	hashOf.Reset()
+	hashOf.Write([]byte(url))
+	hashValue := hashOf.Sum64()
+	return fmt.Sprintf("%d", hashValue)
+}
+
 func (f Fetch) ReadThrough(hashOf hash.Hash64, ttl time.Duration) Fetch {
 	return func(url string) ([]byte, error) {
-		fileName := base64.StdEncoding.EncodeToString(hashOf.Sum([]byte(url)))
-		file := filepath.Join(os.TempDir(), fileName)
+		file := filepath.Join(os.TempDir(), hashUrl(hashOf, url))
 
 		info, err := os.Stat(file)
 		if err == nil && time.Since(info.ModTime()) < ttl {

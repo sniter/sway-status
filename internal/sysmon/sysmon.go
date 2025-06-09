@@ -6,8 +6,6 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
-
-	"github.com/sniter/sway-status/internal/sway"
 )
 
 type SysMon struct {
@@ -160,10 +158,8 @@ func getSwapUsage() int {
 	return used
 }
 
-func (s SysMon) ToBarComponent() sway.BarComponent {
-	return sway.BarComponent{
-		Name:     s.Name,
-		Instance: s.Instance,
-		FullText: fmt.Sprintf(s.LabelFormat, getTemperature(), s.getCPUUsage(), s.getDiskUsage(), getMemoryUsage(), getSwapUsage()),
-	}
+func (s SysMon) GetName() string     { return s.Name }
+func (s SysMon) GetInstance() string { return s.Instance }
+func (s SysMon) GetFullText(_ []byte) (string, error) {
+	return fmt.Sprintf(s.LabelFormat, getTemperature(), s.getCPUUsage(), s.getDiskUsage(), getMemoryUsage(), getSwapUsage()), nil
 }
