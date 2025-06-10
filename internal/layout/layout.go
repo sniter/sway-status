@@ -4,18 +4,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/sniter/sway-status/internal/common/cache"
+	"github.com/sniter/sway-status/internal/common/source"
 	"github.com/sniter/sway-status/internal/sway"
 )
 
 type Layout struct {
-	Cache       cache.Cache[string, []byte]
-	Renderer    func(string) string
-	Name        string
-	Instance    string
-	LabelFormat string
+	InitialValue source.Source
+	Cache        cache.Cache[string, []byte]
+	Renderer     func(string) string
+	Name         string
+	Instance     string
+	LabelFormat  string
 }
 
 func BasicRenderer(layout string) string {
@@ -44,6 +47,33 @@ func (l Layout) fullTextFromCache() (string, error) {
 	return "", errors.New("cache miss")
 }
 
+func (l Layout) readKeyboardEvent(input []byte) (string, bool) {
+	var event sway.SwayChangeEvent[sway.SwayLayoutChanged]
+	err := json.Unmarshal(input, &event)
+	if err != nil {
+		return "", false
+	}
+	if event.Change != "xkb_layout" || event.Input.Layout == "" {
+		return "", false
+	}
+	return fmt.Sprintf(l.LabelFormat, l.Renderer(event.Input.Layout)), true
+}
+
+func (l Layout) readInitialEvent(input []byte) (string, bool) {
+	var event sway.TickEvent
+	if err := json.Unmarshal(input, &event); err != nil || !event.First {
+		log.Printf("read initial event: %s", err)
+		return "", false
+	}
+
+	value, err := l.InitialValue.ReadString()
+	if err == nil {
+		return fmt.Sprintf(l.LabelFormat, l.Renderer(value)), true
+	}
+	log.Printf("failed read init value: %s", err)
+	return "", false
+}
+
 func (l Layout) GetName() string     { return l.Name }
 func (l Layout) GetInstance() string { return l.Instance }
 func (l Layout) GetFullText(input []byte) (string, error) {
@@ -51,18 +81,15 @@ func (l Layout) GetFullText(input []byte) (string, error) {
 		return l.fullTextFromCache()
 	}
 
-	var event sway.SwayChangeEvent[sway.SwayLayoutChanged]
-	err := json.Unmarshal(input, &event)
-	if err != nil {
-		return "", err
+	if locale, ok := l.readInitialEvent(input); ok {
+		l.Cache.Put(cacheKey, []byte(locale))
+		return locale, nil
 	}
 
-	// Extra validation
-	if event.Change != "xkb_layout" || event.Input.Layout == "" {
-		return l.fullTextFromCache()
+	if locale, ok := l.readKeyboardEvent(input); ok {
+		l.Cache.Put(cacheKey, []byte(locale))
+		return locale, nil
 	}
 
-	locale := fmt.Sprintf(l.LabelFormat, l.Renderer(event.Input.Layout))
-	l.Cache.Put(cacheKey, []byte(locale))
-	return locale, nil
+	return l.fullTextFromCache()
 }

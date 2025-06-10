@@ -8,3 +8,7 @@ type SwayChangeEvent[T any] struct {
 	Change string `json:"change"`
 	Input  T      `json:"input"`
 }
+
+type TickEvent struct {
+	First bool `json:"first"`
+}

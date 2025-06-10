@@ -6,15 +6,23 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+
+	"github.com/sniter/sway-status/internal/common/source"
 )
 
 type SysMon struct {
-	DiskName     string
-	CpuStatsFile string
-	LabelFormat  string
-	Name         string
-	Instance     string
+	SensorsInfo   source.Source
+	MemoryInfo    source.Source
+	PorcessesInfo source.Source
+	DisksInfo     source.Source
+	DiskName      string
+	CpuStatsFile  string
+	LabelFormat   string
+	Name          string
+	Instance      string
 }
+
+type SensorsReport struct{}
 
 func getTemperature() string {
 	cmd := exec.Command("sensors")

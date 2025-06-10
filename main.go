@@ -11,6 +11,7 @@ import (
 	"github.com/sniter/sway-status/internal/calendar"
 	"github.com/sniter/sway-status/internal/common"
 	"github.com/sniter/sway-status/internal/common/cache"
+	"github.com/sniter/sway-status/internal/common/source"
 	"github.com/sniter/sway-status/internal/layout"
 	"github.com/sniter/sway-status/internal/sway"
 	"github.com/sniter/sway-status/internal/sysmon"
@@ -43,27 +44,27 @@ func makeHandler() sway.SimpleSwayDelegate {
 
 			battery.Battery{
 				Provider: battery.PowerSupplyProvider{Device: "BAT0"},
-				Renderer: battery.SimpleBatteryRenderer{
-					CapacityIcons: []string{"󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"},
-					StatusIcons: map[battery.BatteryStatus]string{
+				Template: battery.MakeBatteryTemplate(
+					" {{ toStatusIcon .Status }}{{ toCapacityIcon .Capacity }} {{ .Capacity }}% ",
+					battery.PickupStatusIcon(map[battery.BatteryStatus]string{
 						battery.BatteryCharging:      "",
 						battery.BatteryFull:          "",
 						battery.BatteryNotCharging:   "",
 						battery.BatteryDischarging:   "",
 						battery.BatteryUnknownStatus: "",
-					},
-					Format: "%s%s %d%%",
-				},
-				LabelFormat: " %s ",
-				Name:        "battery",
-				Instance:    "bat0",
+					}, ""),
+					battery.PickupCapacityIcon([]string{"󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"}),
+				),
+				Name:     "battery",
+				Instance: "bat0",
 			},
 
 			layout.Layout{
-				Cache:       cache.MakeTempFileCache("layout_"),
-				Renderer:    layout.BasicRenderer,
-				Name:        "layout",
-				LabelFormat: " %s ",
+				InitialValue: source.Run{Script: `swaymsg -t get_inputs | jq '.[] | select(.identifier == "1:1:AT_Translated_Set_2_keyboard") | .xkb_active_layout_name ' | cut -d '"' -f 2`},
+				Cache:        cache.MakeTempFileCache("layout_"),
+				Renderer:     layout.BasicRenderer,
+				Name:         "layout",
+				LabelFormat:  " %s ",
 			},
 
 			calendar.Calendar{

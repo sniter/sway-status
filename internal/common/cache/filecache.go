@@ -46,10 +46,8 @@ func (f FileCache) Put(key string, value []byte) {
 func (f FileCache) Get(key string) ([]byte, bool) {
 	file := f.cacheFile(key)
 
-	data, err := os.ReadFile(file)
-	if err != nil {
-		log.Fatal(err.Error())
-		return nil, false
+	if data, err := os.ReadFile(file); err == nil {
+		return data, true
 	}
-	return data, true
+	return nil, false
 }
