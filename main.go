@@ -24,7 +24,7 @@ func makeHandler() sway.SimpleSwayDelegate {
 			sysmon.SysMon{
 				DiskName:     "/nvme0",
 				CpuStatsFile: "/tmp/cpu_stat",
-				LabelFormat:  "temp: %s cpu: %d%% dsk: %s mem: %d%%/%d%% ",
+				LabelFormat:  "%s  %d%%  %s  %d%%/%d%% ",
 				Name:         "sysmon",
 				Instance:     "main",
 			},
@@ -70,7 +70,7 @@ func makeHandler() sway.SimpleSwayDelegate {
 			calendar.Calendar{
 				Name:     "calendar",
 				Instance: "Local",
-				Format:   "Mon Jan 2 15:04",
+				Format:   " Mon Jan 2 15:04",
 			},
 		},
 	}

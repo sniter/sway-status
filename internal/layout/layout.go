@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/sniter/sway-status/internal/common/cache"
@@ -62,15 +61,14 @@ func (l Layout) readKeyboardEvent(input []byte) (string, bool) {
 func (l Layout) readInitialEvent(input []byte) (string, bool) {
 	var event sway.TickEvent
 	if err := json.Unmarshal(input, &event); err != nil || !event.First {
-		log.Printf("read initial event: %s", err)
+		// log.Printf("Failed decode initial event: %s\n%s", err, string(input))
 		return "", false
 	}
 
-	value, err := l.InitialValue.ReadString()
-	if err == nil {
+	if value, err := l.InitialValue.ReadString(); err == nil {
 		return fmt.Sprintf(l.LabelFormat, l.Renderer(value)), true
 	}
-	log.Printf("failed read init value: %s", err)
+	// log.Printf("failed read init value: %s", err)
 	return "", false
 }
 

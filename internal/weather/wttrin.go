@@ -80,7 +80,7 @@ func (w WttrIn) decode(payload []byte) (string, error) {
 	}
 	condition := p.Conditions[0]
 	description := condition.Description[0].Value
-	temp := fmt.Sprintf("%sC", condition.Temperature)
+	temp := fmt.Sprintf("%s°C", condition.Temperature)
 	windDir := w.WindDirIcons(condition.WindDirection)
 	windSpeed := condition.WindSpeed
 	wind := fmt.Sprintf("%s%skm/h", windDir, windSpeed)
